@@ -143,9 +143,25 @@ class SiteController extends Controller
      *
      * @return string
      */
-    public function actionView()
+    public function actionView($id)
     {
-        return $this->render('singl');
+        $article = Article::findOne($id);
+        $popular = Article::getPopular();
+        $recent = Article::getRecent();
+        $categories = Category::getAll();
+        $comments = $article->getArticleComments();
+        $commentForm = new CommentForm();
+
+        $article->viewedCounter();
+        
+        return $this->render('single',[
+            'article'=>$article,
+            'popular'=>$popular,
+            'recent'=>$recent,
+            'categories'=>$categories,
+            'comments'=>$comments,
+            'commentForm'=>$commentForm
+        ]);
     }
 
 		
@@ -156,6 +172,32 @@ class SiteController extends Controller
      */
     public function actionCategory()
     {
-        return $this->render('category');
+			$data = Category::getArticlesByCategory($id);
+			$popular = Article::getPopular();
+			$recent = Article::getRecent();
+			$categories = Category::getAll();
+			
+			return $this->render('category',[
+					'articles'=>$data['articles'],
+					'pagination'=>$data['pagination'],
+					'popular'=>$popular,
+					'recent'=>$recent,
+					'categories'=>$categories
+			]);
+    }
+
+		public function actionComment($id)
+    {
+        $model = new CommentForm();
+        
+        if(Yii::$app->request->isPost)
+        {
+            $model->load(Yii::$app->request->post());
+            if($model->saveComment($id))
+            {
+                Yii::$app->getSession()->setFlash('comment', 'Your comment will be added soon!');
+                return $this->redirect(['site/view','id'=>$id]);
+            }
+        }
     }
 }
