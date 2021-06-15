@@ -135,4 +135,62 @@ class Article extends \yii\db\ActiveRecord
         ArticleTag::deleteAll(['article_id' => $this->id]);
     }
 
+		public static function getAll($pageSize = 1)
+    {
+        // build a DB query to get all articles
+        $query = Article::find();
+
+        // get the total number of articles (but do not fetch the article data yet)
+        $count = $query->count();
+
+        // create a pagination object with the total count
+        $pagination = new Pagination(['totalCount' => $count, 'pageSize'=>$pageSize]);
+
+        // limit the query using the pagination and retrieve the articles
+        $articles = $query->offset($pagination->offset)
+            ->limit($pagination->limit)
+            ->all();
+        
+        $data['articles'] = $articles;
+        $data['pagination'] = $pagination;
+        
+        return $data;
+    }
+
+		public function getDate()
+    {
+        return Yii::$app->formatter->asDate($this->date);
+    }
+
+		public static function getPopular()
+    {
+        return Article::find()->orderBy('viewed desc')->limit(3)->all();
+    }
+    
+    public static function getRecent()
+    {
+        return Article::find()->orderBy('date asc')->limit(4)->all();
+    }
+    
+    public function getComments()
+    {
+        return $this->hasMany(Comment::className(), ['article_id'=>'id']);
+    }
+
+    public function getArticleComments()
+    {
+        return $this->getComments()->where(['status'=>1])->all();
+    }
+    
+    public function getAuthor()
+    {
+        return $this->hasOne(User::className(), ['id'=>'user_id']);
+    }
+    
+    public function viewedCounter()
+    {
+        $this->viewed += 1;
+        return $this->save(false);
+    }
+
 }

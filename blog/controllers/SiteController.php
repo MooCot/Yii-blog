@@ -2,10 +2,13 @@
 
 namespace app\controllers;
 
+use app\models\Article;
+use app\models\Category;
+use app\models\CommentForm;
 use Yii;
+use yii\data\Pagination;
 use yii\filters\AccessControl;
 use yii\web\Controller;
-use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
@@ -61,7 +64,16 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+				$data = Article::getAll(1);
+				$popular = Article::getPopular();
+
+        return $this->render('index', [
+					'articles'=>$data['articles'],
+					'pagination'=>$data['pagination'],
+					'popular'=>$popular,
+					'recent'=>$recent,
+					'categories'=>$categories
+				]);
     }
 
     /**
@@ -124,5 +136,26 @@ class SiteController extends Controller
     public function actionAbout()
     {
         return $this->render('about');
+    }
+
+		/**
+     * Displays singl page.
+     *
+     * @return string
+     */
+    public function actionView()
+    {
+        return $this->render('singl');
+    }
+
+		
+		/**
+     * Displays category page.
+     *
+     * @return string
+     */
+    public function actionCategory()
+    {
+        return $this->render('category');
     }
 }
