@@ -7,11 +7,11 @@ use Yii;
 /**
  * This is the model class for table "comment".
  *
- * @property int $id
- * @property string|null $text
- * @property int|null $user_id
- * @property int|null $article_id
- * @property int|null $status
+ * @property integer $id
+ * @property string $text
+ * @property integer $user_id
+ * @property integer $article_id
+ * @property integer $status
  *
  * @property Article $article
  * @property User $user
@@ -19,15 +19,19 @@ use Yii;
 class Comment extends \yii\db\ActiveRecord
 {
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
+
+    const STATUS_ALLOW = 1;
+    const STATUS_DISALLOW = 0;
+
     public static function tableName()
     {
         return 'comment';
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function rules()
     {
@@ -40,7 +44,7 @@ class Comment extends \yii\db\ActiveRecord
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function attributeLabels()
     {
@@ -54,8 +58,6 @@ class Comment extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[Article]].
-     *
      * @return \yii\db\ActiveQuery
      */
     public function getArticle()
@@ -64,12 +66,32 @@ class Comment extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[User]].
-     *
      * @return \yii\db\ActiveQuery
      */
     public function getUser()
     {
         return $this->hasOne(User::className(), ['id' => 'user_id']);
+    }
+
+    public function getDate()
+    {
+        return Yii::$app->formatter->asDate($this->date);
+    }
+    
+    public function isAllowed()
+    {
+        return $this->status;
+    }
+
+    public function allow()
+    {
+        $this->status = self::STATUS_ALLOW;
+        return $this->save(false);
+    }
+
+    public function disallow()
+    {
+        $this->status = self::STATUS_DISALLOW;
+        return $this->save(false);
     }
 }
